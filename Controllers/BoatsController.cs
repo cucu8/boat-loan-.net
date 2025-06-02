@@ -34,7 +34,8 @@ namespace SadikTuranECommerce.Controllers
                     IsAvailable = b.IsAvailable,
                     OwnerName = b.Name, // User entity'de Name varsa
                     DistrictName = b.District.Name,
-                    ImageUrls = b.Images.Select(img => img.ImageUrl).ToList()
+                    ImageUrls = b.Images.Select(img => img.ImageUrl).ToList(),
+                    OwnerPhoneNumber = b.Owner.PhoneNumber
                 })
                 .ToListAsync();
 

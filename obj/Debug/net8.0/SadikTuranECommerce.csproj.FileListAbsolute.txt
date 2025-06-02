@@ -142,3 +142,4 @@ D:\SadikTuranECommerce\SadikTuranECommerce\obj\Debug\net8.0\ref\SadikTuranEComme
 D:\SadikTuranECommerce\SadikTuranECommerce\bin\Debug\net8.0\SadikTuranECommerce.staticwebassets.runtime.json
 D:\SadikTuranECommerce\SadikTuranECommerce\obj\Debug\net8.0\staticwebassets.build.json.cache
 D:\SadikTuranECommerce\SadikTuranECommerce\bin\Debug\net8.0\Microsoft.AspNetCore.Authentication.JwtBearer.dll
+D:\SadikTuranECommerce\SadikTuranECommerce\obj\Debug\net8.0\SadikTuranECommerce.sourcelink.json

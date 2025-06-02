@@ -154,7 +154,8 @@ namespace SadikTuranECommerce.Controllers
                 {
                     user.Id,
                     user.Email,
-                    user.UserType
+                    user.UserType,
+                    user.Name
                 }
             });
         }
