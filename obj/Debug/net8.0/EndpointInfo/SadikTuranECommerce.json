@@ -328,10 +328,10 @@
         }
       }
     },
-    "/api/DisctrictContoller/{cityId}": {
+    "/api/Districts/{cityId}": {
       "get": {
         "tags": [
-          "DisctrictContoller"
+          "Districts"
         ],
         "parameters": [
           {

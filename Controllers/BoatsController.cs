@@ -46,12 +46,27 @@ namespace SadikTuranECommerce.Controllers
         [HttpGet("user/{userId}")]
         public async Task<ActionResult<IEnumerable<Boat>>> GetBoatsByUser(int userId)
         {
-            var boats = await _context.Boats
-                .Include(b => b.Images)
-                .Where(b => b.OwnerId == userId)
-                .ToListAsync();
+            var boats = await _context.Boats.Where(b => b.OwnerId == userId)
+                    .Include(b => b.Images)
+                    .Include(b => b.District)
+                    .Include(b => b.Owner)
+                    .ToListAsync();
 
-            return Ok(boats);
+            var boatDtos = boats.Select(b => new BoatResponseDTO
+            {
+                Id = b.Id,
+                Name = b.Name,
+                Description = b.Description,
+                PricePerHour = b.PricePerHour,
+                Capacity = b.Capacity,
+                IsAvailable = b.IsAvailable,
+                OwnerName = b.Name, // User entity'de Name varsa
+                DistrictName = b.District.Name,
+                ImageUrls = b.Images.Select(img => img.ImageUrl).ToList(),
+                OwnerPhoneNumber = b.Owner.PhoneNumber
+            });
+
+            return Ok(boatDtos);
         }
 
         // GET: api/boats/3

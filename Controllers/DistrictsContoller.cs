@@ -6,12 +6,12 @@ namespace SadikTuranECommerce.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-    public class DisctrictContoller: ControllerBase
+    public class DistrictsController : ControllerBase
     {
 
         private readonly BoatRentalDbContext _context;
 
-        public DisctrictContoller(BoatRentalDbContext context)
+        public DistrictsController(BoatRentalDbContext context)
         {
             _context = context;
         }
@@ -19,7 +19,7 @@ namespace SadikTuranECommerce.Controllers
         [HttpGet("{cityId}")]
         public async Task<ActionResult<IEnumerable<DiscrictDTO>>> GetCitiesByCountry(int cityId)
         {
-            var cities = await _context.Districts
+            var discricts = await _context.Districts
                 .Where(c => c.CityId == cityId)
                 .Select(c => new DiscrictDTO
                 {
@@ -28,7 +28,7 @@ namespace SadikTuranECommerce.Controllers
                 })
                 .ToListAsync();
 
-            return Ok(cities);
+            return Ok(discricts);
         }
 
     }

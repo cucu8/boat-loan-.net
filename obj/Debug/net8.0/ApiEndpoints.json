@@ -179,9 +179,9 @@
     ]
   },
   {
-    "ContainingType": "SadikTuranECommerce.Controllers.DisctrictContoller",
+    "ContainingType": "SadikTuranECommerce.Controllers.DistrictsController",
     "Method": "GetCitiesByCountry",
-    "RelativePath": "api/DisctrictContoller/{cityId}",
+    "RelativePath": "api/Districts/{cityId}",
     "HttpMethod": "GET",
     "IsController": true,
     "Order": 0,
