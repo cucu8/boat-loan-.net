@@ -134,7 +134,9 @@ namespace SadikTuranECommerce.Controllers
                 .Include(u => u.UserCredential)
                 .FirstOrDefaultAsync(u => u.Email == loginDto.Email);
 
-            if (user == null || user.UserCredential == null)
+            if (user == null) return BadRequest(new { message = "User Not Found Or Password incorrect" });
+
+            if (user.UserCredential == null)
                 return Unauthorized(new { Message = "Invalid email or password." });
 
             bool isPasswordValid = PasswordHelper.VerifyPasswordHash(
