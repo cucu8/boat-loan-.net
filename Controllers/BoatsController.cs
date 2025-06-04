@@ -6,9 +6,9 @@ using SadikTuranECommerce.Entities;
 
 namespace SadikTuranECommerce.Controllers
 {
-  
+
     [Route("api/boats")]
-    public class BoatsController: ControllerBase
+    public class BoatsController : ControllerBase
     {
         private readonly BoatRentalDbContext _context;
 
@@ -34,6 +34,11 @@ namespace SadikTuranECommerce.Controllers
                     IsAvailable = b.IsAvailable,
                     OwnerName = b.Name, // User entity'de Name varsa
                     DistrictName = b.District.Name,
+                    DistrictId= b.DistrictId,
+                    CityId = b.District.CityId,
+                    CityName = b.District.City.Name,
+                    CountryId = b.District.City.CountryId,
+                    CountryName = b.District.City.Country.Name,
                     ImageUrls = b.Images.Select(img => img.ImageUrl).ToList(),
                     OwnerPhoneNumber = b.Owner.PhoneNumber
                 })
@@ -176,5 +181,33 @@ namespace SadikTuranECommerce.Controllers
             return CreatedAtAction(nameof(GetBoat), new { id = boat.Id }, dto);
         }
 
+
+
+        [Authorize]
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteBoat(int id)
+        {
+            var boat = await _context.Boats
+                .Include(b => b.Images)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (boat == null)
+                return NotFound(new { Message = $"Boat with ID {id} not found." });
+
+            // Resimleri wwwroot/uploads klasöründen sil
+            foreach (var image in boat.Images)
+            {
+                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", image.ImageUrl.TrimStart('/'));
+                if (System.IO.File.Exists(filePath))
+                {
+                    System.IO.File.Delete(filePath);
+                }
+            }
+
+            _context.Boats.Remove(boat);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { Message = "Boat deleted successfully." });
+        }
     }
 }
