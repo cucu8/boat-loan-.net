@@ -36,7 +36,11 @@ namespace SadikTuranECommerce.Controllers
                 {
                     Id = b.Id,
                     Name = b.Name,
-                    ImageUrls = b.Images.Select(i => i.ImageUrl).ToList()
+                    Images = b.Images.Select(img => new BoatImageDTO
+                    {
+                        Id = img.Id,
+                        Base64Image = $"data:image/jpeg;base64,{Convert.ToBase64String(img.ImageData)}"
+                    }).ToList()
                 }).ToList()
             }).ToList();
 
@@ -66,7 +70,11 @@ namespace SadikTuranECommerce.Controllers
                 {
                     Id = b.Id,
                     Name = b.Name,
-                    ImageUrls = b.Images.Select(i => i.ImageUrl).ToList()
+                    Images = b.Images.Select(img => new BoatImageDTO
+                    {
+                        Id = img.Id,
+                        Base64Image = $"data:image/jpeg;base64,{Convert.ToBase64String(img.ImageData)}"
+                    }).ToList()
                 }).ToList()
             });
         }
@@ -137,7 +145,7 @@ namespace SadikTuranECommerce.Controllers
             if (user == null) return BadRequest(new { message = "User Not Found Or Password incorrect" });
 
             if (user.UserCredential == null)
-                return Unauthorized(new { Message = "Invalid email or password." });
+                return BadRequest(new { Message = "Invalid email or password." });
 
             bool isPasswordValid = PasswordHelper.VerifyPasswordHash(
                 loginDto.Password,

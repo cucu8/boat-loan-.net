@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SadikTuranECommerce.DTO;
 using SadikTuranECommerce.Entities;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace SadikTuranECommerce.Controllers
 {
@@ -23,6 +24,8 @@ namespace SadikTuranECommerce.Controllers
             var boats = await _context.Boats
                 .Include(b => b.Owner)
                 .Include(b => b.District)
+                .ThenInclude(b => b.City)
+                .ThenInclude(b =>b.Country)
                 .Include(b => b.Images)
                 .Select(b => new BoatResponseDTO
                 {
@@ -32,14 +35,18 @@ namespace SadikTuranECommerce.Controllers
                     PricePerHour = b.PricePerHour,
                     Capacity = b.Capacity,
                     IsAvailable = b.IsAvailable,
-                    OwnerName = b.Name, // User entity'de Name varsa
+                    OwnerName = b.Name, 
                     DistrictName = b.District.Name,
                     DistrictId= b.DistrictId,
                     CityId = b.District.CityId,
                     CityName = b.District.City.Name,
                     CountryId = b.District.City.CountryId,
                     CountryName = b.District.City.Country.Name,
-                    ImageUrls = b.Images.Select(img => img.ImageUrl).ToList(),
+                    Images = b.Images.Select(img => new BoatImageDTO
+                    {
+                        Id = img.Id,
+                        Base64Image = $"data:image/jpeg;base64,{Convert.ToBase64String(img.ImageData)}"
+                    }).ToList(),
                     OwnerPhoneNumber = b.Owner.PhoneNumber
                 })
                 .ToListAsync();
@@ -54,6 +61,8 @@ namespace SadikTuranECommerce.Controllers
             var boats = await _context.Boats.Where(b => b.OwnerId == userId)
                     .Include(b => b.Images)
                     .Include(b => b.District)
+                    .ThenInclude(b => b.City)
+                    .ThenInclude(b => b.Country)
                     .Include(b => b.Owner)
                     .ToListAsync();
 
@@ -67,7 +76,16 @@ namespace SadikTuranECommerce.Controllers
                 IsAvailable = b.IsAvailable,
                 OwnerName = b.Name, // User entity'de Name varsa
                 DistrictName = b.District.Name,
-                ImageUrls = b.Images.Select(img => img.ImageUrl).ToList(),
+                DistrictId = b.DistrictId,
+                CityId = b.District.CityId,
+                CityName = b.District.City.Name,
+                CountryId = b.District.City.CountryId,
+                CountryName = b.District.City.Country.Name,
+                 Images = b.Images.Select(img => new BoatImageDTO
+                {
+                    Id = img.Id,
+                    Base64Image = $"data:image/jpeg;base64,{Convert.ToBase64String(img.ImageData)}"
+                }).ToList(),
                 OwnerPhoneNumber = b.Owner.PhoneNumber
             });
 
@@ -81,6 +99,8 @@ namespace SadikTuranECommerce.Controllers
             var boat = await _context.Boats
                     .Include(b => b.Images)
                     .Include(b => b.District)
+                    .ThenInclude(d => d.City)
+                    .ThenInclude(c => c.Country)
                     .Include(b => b.Owner)
                     .FirstOrDefaultAsync(b => b.Id == id);
 
@@ -95,9 +115,18 @@ namespace SadikTuranECommerce.Controllers
                 PricePerHour = boat.PricePerHour,
                 Capacity = boat.Capacity,
                 IsAvailable = boat.IsAvailable,
-                DistrictName = boat.District.ToString(),
-                OwnerName = boat.Owner.ToString(),
-                ImageUrls = boat.Images.Select(img => img.ImageUrl).ToList(),
+                OwnerName = boat.Name, // User entity'de Name varsa
+                DistrictName = boat.District.Name,
+                DistrictId = boat.DistrictId,
+                CityId = boat.District.CityId,
+                CityName = boat.District.City.Name,
+                CountryId = boat.District.City.CountryId,
+                CountryName = boat.District.City.Country.Name,
+                Images = boat.Images.Select(img => new BoatImageDTO
+                {
+                    Id = img.Id,
+                    Base64Image = $"data:image/jpeg;base64,{Convert.ToBase64String(img.ImageData)}"
+                }).ToList(),
                 OwnerPhoneNumber = boat.Owner.PhoneNumber
             };
 
@@ -127,10 +156,7 @@ namespace SadikTuranECommerce.Controllers
                 Images = new List<BoatImage>()
             };
 
-            // wwwroot/uploads dizini
-            var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
-            if (!Directory.Exists(uploadsFolder))
-                Directory.CreateDirectory(uploadsFolder);
+
 
             if (request.Images != null)
             {
@@ -138,20 +164,16 @@ namespace SadikTuranECommerce.Controllers
                 {
                     if (formFile.Length > 0)
                     {
-                        var fileName = Guid.NewGuid().ToString() + Path.GetExtension(formFile.FileName);
-                        var filePath = Path.Combine(uploadsFolder, fileName);
-
-                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        using (var memoryStream = new MemoryStream())
                         {
-                            await formFile.CopyToAsync(stream);
+                            await formFile.CopyToAsync(memoryStream);
+                            var imageData = memoryStream.ToArray();
+
+                            boat.Images.Add(new BoatImage
+                            {
+                                ImageData = imageData
+                            });
                         }
-
-                        var imageUrl = $"/uploads/{fileName}";
-
-                        boat.Images.Add(new BoatImage
-                        {
-                            ImageUrl = imageUrl
-                        });
                     }
                 }
             }
@@ -160,10 +182,12 @@ namespace SadikTuranECommerce.Controllers
             await _context.SaveChangesAsync();
 
             var createdBoat = await _context.Boats
-    .Include(b => b.Owner)
-    .Include(b => b.District)
-    .Include(b => b.Images)
-    .FirstOrDefaultAsync(b => b.Id == boat.Id);
+                .Include(b => b.Owner)
+                .Include(b => b.District)
+                .ThenInclude(b => b.City)
+                .ThenInclude(b => b.Country)
+                .Include(b => b.Images)
+                .FirstOrDefaultAsync(b => b.Id == boat.Id);
 
             var dto = new BoatResponseDTO
             {
@@ -174,8 +198,17 @@ namespace SadikTuranECommerce.Controllers
                 Capacity = createdBoat.Capacity,
                 IsAvailable = createdBoat.IsAvailable,
                 DistrictName = createdBoat.District.Name,
+                DistrictId = createdBoat.DistrictId,
+                CityId = createdBoat.District.CityId,
+                CityName = createdBoat.District.City.Name,
+                CountryId = createdBoat.District.City.CountryId,
+                CountryName = createdBoat.District.City.Country.Name,
                 OwnerName = createdBoat.Owner.Email,
-                ImageUrls = createdBoat.Images.Select(img => img.ImageUrl).ToList()
+                Images = createdBoat.Images.Select(img => new BoatImageDTO
+                {
+                    Id = img.Id,
+                    Base64Image = $"data:image/jpeg;base64,{Convert.ToBase64String(img.ImageData)}"
+                }).ToList()
             };
 
             return CreatedAtAction(nameof(GetBoat), new { id = boat.Id }, dto);
@@ -193,16 +226,6 @@ namespace SadikTuranECommerce.Controllers
 
             if (boat == null)
                 return NotFound(new { Message = $"Boat with ID {id} not found." });
-
-            // Resimleri wwwroot/uploads klasöründen sil
-            foreach (var image in boat.Images)
-            {
-                var filePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", image.ImageUrl.TrimStart('/'));
-                if (System.IO.File.Exists(filePath))
-                {
-                    System.IO.File.Delete(filePath);
-                }
-            }
 
             _context.Boats.Remove(boat);
             await _context.SaveChangesAsync();

@@ -1,4 +1,6 @@
-﻿namespace SadikTuranECommerce.DTO
+﻿using SadikTuranECommerce.Entities;
+
+namespace SadikTuranECommerce.DTO
 {
     public class BoatResponseDTO
     {
@@ -16,6 +18,7 @@
         public int DistrictId { get; set; }
         public string DistrictName { get; set; }
         public string OwnerPhoneNumber { get; set; }
-        public List<string> ImageUrls { get; set; } = new();
+        public List<BoatImageDTO> Images { get; set; }
+
     }
 }

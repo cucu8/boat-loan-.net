@@ -4,7 +4,7 @@
     {
         public int Id { get; set; }
 
-        public string ImageUrl { get; set; } = string.Empty;
+        public byte[] ImageData { get; set; } 
 
         public int BoatId { get; set; }
 

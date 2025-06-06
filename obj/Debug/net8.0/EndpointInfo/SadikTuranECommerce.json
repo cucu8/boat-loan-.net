@@ -629,8 +629,9 @@
             "type": "integer",
             "format": "int32"
           },
-          "imageUrl": {
+          "imageData": {
             "type": "string",
+            "format": "byte",
             "nullable": true
           },
           "boatId": {
@@ -639,6 +640,20 @@
           },
           "boat": {
             "$ref": "#/components/schemas/Boat"
+          }
+        },
+        "additionalProperties": false
+      },
+      "BoatImageDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "base64Image": {
+            "type": "string",
+            "nullable": true
           }
         },
         "additionalProperties": false
@@ -701,10 +716,10 @@
             "type": "string",
             "nullable": true
           },
-          "imageUrls": {
+          "images": {
             "type": "array",
             "items": {
-              "type": "string"
+              "$ref": "#/components/schemas/BoatImageDTO"
             },
             "nullable": true
           }
