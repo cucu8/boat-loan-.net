@@ -108,6 +108,82 @@
   },
   {
     "ContainingType": "SadikTuranECommerce.Controllers.BoatsController",
+    "Method": "UpdateBoat",
+    "RelativePath": "api/boats/{id}",
+    "HttpMethod": "PUT",
+    "IsController": true,
+    "Order": 0,
+    "Parameters": [
+      {
+        "Name": "id",
+        "Type": "System.Int32",
+        "IsRequired": true
+      },
+      {
+        "Name": "Name",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "Description",
+        "Type": "System.String",
+        "IsRequired": false
+      },
+      {
+        "Name": "PricePerHour",
+        "Type": "System.Decimal",
+        "IsRequired": false
+      },
+      {
+        "Name": "Capacity",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "IsAvailable",
+        "Type": "System.Boolean",
+        "IsRequired": false
+      },
+      {
+        "Name": "AvailableFrom",
+        "Type": "System.DateTime",
+        "IsRequired": false
+      },
+      {
+        "Name": "AvailableTo",
+        "Type": "System.DateTime",
+        "IsRequired": false
+      },
+      {
+        "Name": "OwnerId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "DistrictId",
+        "Type": "System.Int32",
+        "IsRequired": false
+      },
+      {
+        "Name": "Images",
+        "Type": "System.Collections.Generic.List\u00601[[Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "NewImages",
+        "Type": "System.Collections.Generic.List\u00601[[Microsoft.AspNetCore.Http.IFormFile, Microsoft.AspNetCore.Http.Features, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60]]",
+        "IsRequired": false
+      },
+      {
+        "Name": "ImagesToDelete",
+        "Type": "System.Collections.Generic.List\u00601[[System.Int32, System.Private.CoreLib, Version=8.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]",
+        "IsRequired": false
+      }
+    ],
+    "ReturnTypes": []
+  },
+  {
+    "ContainingType": "SadikTuranECommerce.Controllers.BoatsController",
     "Method": "DeleteBoat",
     "RelativePath": "api/boats/{id}",
     "HttpMethod": "DELETE",

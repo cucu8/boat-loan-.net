@@ -240,6 +240,146 @@
           }
         }
       },
+      "put": {
+        "tags": [
+          "Boats"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "required": [
+                  "AvailableFrom",
+                  "AvailableTo",
+                  "Capacity",
+                  "DistrictId",
+                  "Name",
+                  "OwnerId",
+                  "PricePerHour"
+                ],
+                "type": "object",
+                "properties": {
+                  "Name": {
+                    "maxLength": 100,
+                    "minLength": 0,
+                    "type": "string"
+                  },
+                  "Description": {
+                    "maxLength": 1000,
+                    "minLength": 0,
+                    "type": "string"
+                  },
+                  "PricePerHour": {
+                    "minimum": 1,
+                    "type": "number",
+                    "format": "double"
+                  },
+                  "Capacity": {
+                    "maximum": 1000,
+                    "minimum": 1,
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "IsAvailable": {
+                    "type": "boolean"
+                  },
+                  "AvailableFrom": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "AvailableTo": {
+                    "type": "string",
+                    "format": "date-time"
+                  },
+                  "OwnerId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "DistrictId": {
+                    "type": "integer",
+                    "format": "int32"
+                  },
+                  "Images": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  },
+                  "NewImages": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "format": "binary"
+                    }
+                  },
+                  "ImagesToDelete": {
+                    "type": "array",
+                    "items": {
+                      "type": "integer",
+                      "format": "int32"
+                    }
+                  }
+                }
+              },
+              "encoding": {
+                "Name": {
+                  "style": "form"
+                },
+                "Description": {
+                  "style": "form"
+                },
+                "PricePerHour": {
+                  "style": "form"
+                },
+                "Capacity": {
+                  "style": "form"
+                },
+                "IsAvailable": {
+                  "style": "form"
+                },
+                "AvailableFrom": {
+                  "style": "form"
+                },
+                "AvailableTo": {
+                  "style": "form"
+                },
+                "OwnerId": {
+                  "style": "form"
+                },
+                "DistrictId": {
+                  "style": "form"
+                },
+                "Images": {
+                  "style": "form"
+                },
+                "NewImages": {
+                  "style": "form"
+                },
+                "ImagesToDelete": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      },
       "delete": {
         "tags": [
           "Boats"

@@ -25,7 +25,7 @@ namespace SadikTuranECommerce.Controllers
                 .Include(b => b.Owner)
                 .Include(b => b.District)
                 .ThenInclude(b => b.City)
-                .ThenInclude(b =>b.Country)
+                .ThenInclude(b => b.Country)
                 .Include(b => b.Images)
                 .Select(b => new BoatResponseDTO
                 {
@@ -35,9 +35,9 @@ namespace SadikTuranECommerce.Controllers
                     PricePerHour = b.PricePerHour,
                     Capacity = b.Capacity,
                     IsAvailable = b.IsAvailable,
-                    OwnerName = b.Name, 
+                    OwnerName = b.Name,
                     DistrictName = b.District.Name,
-                    DistrictId= b.DistrictId,
+                    DistrictId = b.DistrictId,
                     CityId = b.District.CityId,
                     CityName = b.District.City.Name,
                     CountryId = b.District.City.CountryId,
@@ -81,7 +81,7 @@ namespace SadikTuranECommerce.Controllers
                 CityName = b.District.City.Name,
                 CountryId = b.District.City.CountryId,
                 CountryName = b.District.City.Country.Name,
-                 Images = b.Images.Select(img => new BoatImageDTO
+                Images = b.Images.Select(img => new BoatImageDTO
                 {
                     Id = img.Id,
                     Base64Image = $"data:image/jpeg;base64,{Convert.ToBase64String(img.ImageData)}"
@@ -214,6 +214,103 @@ namespace SadikTuranECommerce.Controllers
             return CreatedAtAction(nameof(GetBoat), new { id = boat.Id }, dto);
         }
 
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateBoat(int id, [FromForm] BoatEditDTO request)
+        {
+            var boat = await _context.Boats
+                .Include(b => b.Images) // Mevcut resimleri çek
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            if (boat == null)
+            {
+                return NotFound($"Boat with ID {id} not found.");
+            }
+
+            // 1. Tekne bilgilerini güncelle
+            boat.Name = request.Name;
+            boat.Description = request.Description;
+            boat.PricePerHour = request.PricePerHour;
+            boat.Capacity = request.Capacity;
+            boat.IsAvailable = request.IsAvailable;
+            boat.AvailableFrom = request.AvailableFrom;
+            boat.AvailableTo = request.AvailableTo;
+            boat.DistrictId = request.DistrictId;
+            // boat.OwnerId = request.OwnerId; // OwnerId genellikle update edilmez, sabit kalır. Gerekiyorsa açılabilir.
+
+            // 2. Mevcut resimleri silme
+            if (request.ImagesToDelete != null && request.ImagesToDelete.Any())
+            {
+                // Silinecek resim ID'lerine sahip kayıtları bul ve sil
+                var imagesToRemove = boat.Images
+                                         .Where(img => request.ImagesToDelete.Contains(img.Id))
+                                         .ToList();
+
+                foreach (var image in imagesToRemove)
+                {
+                    // Base64 olduğu için fiziksel dosya silme yok, sadece veritabanı kaydını siliyoruz.
+                    _context.BoatImages.Remove(image);
+                }
+            }
+
+            // 3. Yeni resimleri ekle (Base64 olarak)
+            if (request.NewImages != null && request.NewImages.Any())
+            {
+                foreach (var formFile in request.NewImages)
+                {
+                    if (formFile.Length > 0)
+                    {
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            await formFile.CopyToAsync(memoryStream);
+                            var imageData = memoryStream.ToArray();
+
+                            boat.Images.Add(new BoatImage
+                            {
+                                BoatId = boat.Id, // Hangi tekneye ait olduğunu belirt
+                                ImageData = imageData
+                            });
+                        }
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync(); // Tüm değişiklikleri kaydet
+
+            // Güncellenmiş tekneyi ve resimlerini döndürmek isteyebiliriz
+            var updatedBoat = await _context.Boats
+                .Include(b => b.Owner)
+                .Include(b => b.District)
+                .ThenInclude(d => d.City)
+                .ThenInclude(c => c.Country)
+                .Include(b => b.Images)
+                .FirstOrDefaultAsync(b => b.Id == id);
+
+            var updatedDto = new BoatResponseDTO
+            {
+                Id = updatedBoat.Id,
+                Name = updatedBoat.Name,
+                Description = updatedBoat.Description,
+                PricePerHour = updatedBoat.PricePerHour,
+                Capacity = updatedBoat.Capacity,
+                IsAvailable = updatedBoat.IsAvailable,
+                DistrictName = updatedBoat.District.Name,
+                DistrictId = updatedBoat.DistrictId,
+                CityId = updatedBoat.District.CityId,
+                CityName = updatedBoat.District.City.Name,
+                CountryId = updatedBoat.District.City.CountryId,
+                CountryName = updatedBoat.District.City.Country.Name,
+                OwnerName = updatedBoat.Owner.Email, // Owner entity'nizdeki doğru alan adını kullanın
+                Images = updatedBoat.Images.Select(img => new BoatImageDTO
+                {
+                    Id = img.Id,
+                    Base64Image = img.ImageData != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(img.ImageData)}" : null
+                }).ToList(),
+                OwnerPhoneNumber = updatedBoat.Owner.PhoneNumber
+            };
+
+            return Ok(updatedDto); // 200 OK ile güncellenmiş DTO'yu döndür
+        }
 
 
         [Authorize]

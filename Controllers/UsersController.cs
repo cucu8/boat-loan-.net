@@ -153,7 +153,7 @@ namespace SadikTuranECommerce.Controllers
                 user.UserCredential.PasswordSalt);
 
             if (!isPasswordValid)
-                return Unauthorized(new { Message = "Invalid email or password." });
+                return BadRequest(new { Message = "Invalid email or password." });
 
             var token = JwtHelper.GenerateToken(user, _context.GetService<IConfiguration>());
 
