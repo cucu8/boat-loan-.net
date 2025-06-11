@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("SadikTuranECommerce")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+5cbdc39d7b2a4466ed50f05a541228008cae47d6")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+03cae21582b00e4ea80c10fd89f5f5f693ebae21")]
 [assembly: System.Reflection.AssemblyProductAttribute("SadikTuranECommerce")]
 [assembly: System.Reflection.AssemblyTitleAttribute("SadikTuranECommerce")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

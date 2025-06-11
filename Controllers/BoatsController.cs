@@ -18,6 +18,37 @@ namespace SadikTuranECommerce.Controllers
             _context = context;
         }
 
+        private BoatResponseDTO MapBoatToResponseDTO(Boat boat)
+        {
+            if (boat == null)
+            {
+                return null; // Or throw an exception, depending on your error handling strategy
+            }
+
+            return new BoatResponseDTO
+            {
+                Id = boat.Id,
+                Name = boat.Name,
+                Description = boat.Description,
+                PricePerHour = boat.PricePerHour,
+                Capacity = boat.Capacity,
+                IsAvailable = boat.IsAvailable,
+                OwnerName = boat.Owner?.Email, // Use null-conditional operator for safety
+                OwnerPhoneNumber = boat.Owner?.PhoneNumber, // Use null-conditional operator for safety
+                DistrictName = boat.District?.Name,
+                DistrictId = boat.DistrictId,
+                CityId = boat.District.CityId,
+                CityName = boat.District.City.Name,
+                CountryId = boat.District.City.CountryId,
+                CountryName = boat.District.City?.Country?.Name,
+                Images = boat.Images?.Select(img => new BoatImageDTO
+                {
+                    Id = img.Id,
+                    Base64Image = img.ImageData != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(img.ImageData)}" : null
+                }).ToList() ?? new List<BoatImageDTO>() // Handle null Images collection
+            };
+        }
+
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BoatResponseDTO>>> GetAllBoats()
         {
@@ -27,31 +58,11 @@ namespace SadikTuranECommerce.Controllers
                 .ThenInclude(b => b.City)
                 .ThenInclude(b => b.Country)
                 .Include(b => b.Images)
-                .Select(b => new BoatResponseDTO
-                {
-                    Id = b.Id,
-                    Name = b.Name,
-                    Description = b.Description,
-                    PricePerHour = b.PricePerHour,
-                    Capacity = b.Capacity,
-                    IsAvailable = b.IsAvailable,
-                    OwnerName = b.Name,
-                    DistrictName = b.District.Name,
-                    DistrictId = b.DistrictId,
-                    CityId = b.District.CityId,
-                    CityName = b.District.City.Name,
-                    CountryId = b.District.City.CountryId,
-                    CountryName = b.District.City.Country.Name,
-                    Images = b.Images.Select(img => new BoatImageDTO
-                    {
-                        Id = img.Id,
-                        Base64Image = $"data:image/jpeg;base64,{Convert.ToBase64String(img.ImageData)}"
-                    }).ToList(),
-                    OwnerPhoneNumber = b.Owner.PhoneNumber
-                })
-                .ToListAsync();
+                .ToListAsync(); // Fetch all boats first
 
-            return Ok(boats);
+            var boatDtos = boats.Select(MapBoatToResponseDTO).ToList(); // Use the new mapping method
+
+            return Ok(boatDtos);
         }
 
         // GET: api/boats/user/5
@@ -66,28 +77,7 @@ namespace SadikTuranECommerce.Controllers
                     .Include(b => b.Owner)
                     .ToListAsync();
 
-            var boatDtos = boats.Select(b => new BoatResponseDTO
-            {
-                Id = b.Id,
-                Name = b.Name,
-                Description = b.Description,
-                PricePerHour = b.PricePerHour,
-                Capacity = b.Capacity,
-                IsAvailable = b.IsAvailable,
-                OwnerName = b.Name, // User entity'de Name varsa
-                DistrictName = b.District.Name,
-                DistrictId = b.DistrictId,
-                CityId = b.District.CityId,
-                CityName = b.District.City.Name,
-                CountryId = b.District.City.CountryId,
-                CountryName = b.District.City.Country.Name,
-                Images = b.Images.Select(img => new BoatImageDTO
-                {
-                    Id = img.Id,
-                    Base64Image = $"data:image/jpeg;base64,{Convert.ToBase64String(img.ImageData)}"
-                }).ToList(),
-                OwnerPhoneNumber = b.Owner.PhoneNumber
-            });
+            var boatDtos = boats.Select(MapBoatToResponseDTO).ToList(); // Use the new mapping method
 
             return Ok(boatDtos);
         }
@@ -153,6 +143,7 @@ namespace SadikTuranECommerce.Controllers
                 AvailableTo = request.AvailableTo,
                 OwnerId = request.OwnerId,
                 DistrictId = request.DistrictId,
+
                 Images = new List<BoatImage>()
             };
 

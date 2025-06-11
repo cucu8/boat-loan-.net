@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using SadikTuranECommerce.DTO;
@@ -32,16 +33,6 @@ namespace SadikTuranECommerce.Controllers
                 PhoneNumber = u.PhoneNumber,
                 Name = u.Name,
                 UserType = u.UserType,
-                Boats = u.Boats.Select(b => new BoatResponseDTO
-                {
-                    Id = b.Id,
-                    Name = b.Name,
-                    Images = b.Images.Select(img => new BoatImageDTO
-                    {
-                        Id = img.Id,
-                        Base64Image = $"data:image/jpeg;base64,{Convert.ToBase64String(img.ImageData)}"
-                    }).ToList()
-                }).ToList()
             }).ToList();
 
             return Ok(userDtos);
@@ -66,16 +57,6 @@ namespace SadikTuranECommerce.Controllers
                 PhoneNumber = user.PhoneNumber,
                 Name = user.Name,
                 UserType = user.UserType,
-                Boats = user.Boats.Select(b => new BoatResponseDTO
-                {
-                    Id = b.Id,
-                    Name = b.Name,
-                    Images = b.Images.Select(img => new BoatImageDTO
-                    {
-                        Id = img.Id,
-                        Base64Image = $"data:image/jpeg;base64,{Convert.ToBase64String(img.ImageData)}"
-                    }).ToList()
-                }).ToList()
             });
         }
 
@@ -97,10 +78,8 @@ namespace SadikTuranECommerce.Controllers
                     return BadRequest(new { Message = "Phone number is already registered." });
             }
 
-            // Şifreyi hash ve salt olarak oluştur
             PasswordHelper.CreatePasswordHash(userDto.Password, out string passwordHash, out string passwordSalt);
 
-            // User entity oluştur
             var user = new User
             {
                 Email = userDto.Email,
@@ -110,8 +89,7 @@ namespace SadikTuranECommerce.Controllers
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
-
-            // UserCredential entity oluştur (ilişki varsayımıyla)
+     
             var userCredential = new UserCredential
             {
                 PasswordHash = passwordHash,
@@ -131,7 +109,7 @@ namespace SadikTuranECommerce.Controllers
                 PhoneNumber = user.PhoneNumber,
                 Name = user.Name,
                 UserType = user.UserType,
-                Boats = new List<BoatResponseDTO>() // Yeni kullanıcıda henüz tekne yok
+         
             });
         }
 
@@ -167,6 +145,50 @@ namespace SadikTuranECommerce.Controllers
                     user.UserType,
                     user.Name
                 }
+            });
+        }
+
+
+        [Authorize]
+        [HttpPut("{id}")]
+        public async Task<ActionResult<UserResponseDTO>> UpdateUser(int id, [FromBody] UserUpdateDTO userUpdateDto)
+        {
+            var userToUpdate = await _context.Users.FirstOrDefaultAsync(u => u.Id == id);
+
+            if (userToUpdate == null)
+            {
+                return NotFound(new { Message = $"User with Id = {id} not found." });
+            }
+
+            // Check if the new email is already registered by another user
+            if (!string.IsNullOrEmpty(userUpdateDto.Email) && userUpdateDto.Email != userToUpdate.Email)
+            {
+                if (await _context.Users.AnyAsync(u => u.Email == userUpdateDto.Email))
+                {
+                    return BadRequest(new { Message = "Email is already registered by another user." });
+                }
+                userToUpdate.Email = userUpdateDto.Email;
+            }
+
+            // Check if the new phone number is already registered by another user
+            if (!string.IsNullOrEmpty(userUpdateDto.PhoneNumber) && userUpdateDto.PhoneNumber != userToUpdate.PhoneNumber)
+            {
+                if (await _context.Users.AnyAsync(u => u.PhoneNumber == userUpdateDto.PhoneNumber))
+                {
+                    return BadRequest(new { Message = "Phone number is already registered by another user." });
+                }
+                userToUpdate.PhoneNumber = userUpdateDto.PhoneNumber;
+            }
+
+           
+            userToUpdate.UpdatedAt = DateTime.UtcNow; 
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new UserResponseDTO
+            {
+                Email = userToUpdate.Email,
+                PhoneNumber = userToUpdate.PhoneNumber,
             });
         }
 
