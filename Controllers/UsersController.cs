@@ -38,6 +38,7 @@ namespace SadikTuranECommerce.Controllers
             return Ok(userDtos);
         }
 
+        [Authorize]
         [HttpGet("{id}")]
         public async Task<ActionResult<UserResponseDTO>> GetUser(int id)
         {
@@ -50,6 +51,7 @@ namespace SadikTuranECommerce.Controllers
             {
                 return NotFound(new { Message = $"User with Id = {id} not found." });
             }
+
             return Ok(new UserResponseDTO
             {
                 Id = user.Id,
@@ -182,6 +184,7 @@ namespace SadikTuranECommerce.Controllers
 
            
             userToUpdate.UpdatedAt = DateTime.UtcNow; 
+           
 
             await _context.SaveChangesAsync();
 
@@ -192,6 +195,67 @@ namespace SadikTuranECommerce.Controllers
             });
         }
 
+
+        [Authorize]
+        [HttpPut("{id}/change-password")]
+        public async Task<ActionResult> ChangePassword(int id, [FromBody] ChangePasswordDTO changePasswordDto)
+        {
+         
+            var user = await _context.Users
+                .Include(u => u.UserCredential) 
+                .FirstOrDefaultAsync(u => u.Id == id);
+
+            // Kullanıcı bulunamadıysa hata dön
+            if (user == null)
+            {
+                return NotFound(new { Message = $"User with ID '{id}' not found." });
+            }
+
+            // Kullanıcının kimlik bilgileri (şifre hash/salt) eksikse hata dön
+            if (user.UserCredential == null)
+            {
+                // Bu durum normalde olmamalı, her kullanıcının kimlik bilgisi olmalı
+                return BadRequest(new { Message = "User has no credentials to change password. Please contact support." });
+            }
+
+            // 2. Mevcut şifreyi doğrula
+            bool isCurrentPasswordValid = PasswordHelper.VerifyPasswordHash(
+                changePasswordDto.CurrentPassword,
+                user.UserCredential.PasswordHash,
+                user.UserCredential.PasswordSalt);
+
+            if (!isCurrentPasswordValid)
+            {
+                return BadRequest(new { Message = "The current password you entered is incorrect." });
+            }
+
+            // 3. Yeni şifre ve onay şifresinin eşleştiğini kontrol et
+            if (changePasswordDto.NewPassword != changePasswordDto.NewPasswordConfirm)
+            {
+                return BadRequest(new { Message = "New password and confirmation do not match." });
+            }
+
+            // 4. Yeni şifreyi mevcut şifreyle aynı olup olmadığını kontrol et
+            if (changePasswordDto.NewPassword == changePasswordDto.CurrentPassword)
+            {
+                return BadRequest(new { Message = "New password cannot be the same as the current password." });
+            }
+
+
+            // 5. Yeni şifre için hash ve salt oluştur
+            PasswordHelper.CreatePasswordHash(changePasswordDto.NewPassword, out string newPasswordHash, out string newPasswordSalt);
+
+            // 6. Kullanıcının kimlik bilgilerini güncelle
+            user.UserCredential.PasswordHash = newPasswordHash;
+            user.UserCredential.PasswordSalt = newPasswordSalt;
+            user.UpdatedAt = DateTime.UtcNow; // Kullanıcı kaydının güncellenme zamanını işaretle
+
+            // 7. Değişiklikleri veritabanına kaydet
+            await _context.SaveChangesAsync();
+
+            // Başarılı yanıt dön
+            return Ok(new { Message = "Your password has been successfully changed." });
+        }
 
     }
 }
