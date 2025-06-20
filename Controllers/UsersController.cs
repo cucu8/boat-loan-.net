@@ -181,10 +181,8 @@ namespace SadikTuranECommerce.Controllers
                 }
                 userToUpdate.PhoneNumber = userUpdateDto.PhoneNumber;
             }
-
            
             userToUpdate.UpdatedAt = DateTime.UtcNow; 
-           
 
             await _context.SaveChangesAsync();
 
@@ -240,7 +238,6 @@ namespace SadikTuranECommerce.Controllers
             {
                 return BadRequest(new { Message = "New password cannot be the same as the current password." });
             }
-
 
             // 5. Yeni şifre için hash ve salt oluştur
             PasswordHelper.CreatePasswordHash(changePasswordDto.NewPassword, out string newPasswordHash, out string newPasswordSalt);

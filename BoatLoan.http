@@ -1,0 +1,6 @@
+@BoatLoan_HostAddress = http://localhost:5283
+
+GET {{BoatLoan_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

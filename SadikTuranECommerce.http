@@ -1,6 +1,0 @@
-@SadikTuranECommerce_HostAddress = http://localhost:5085
-
-GET {{SadikTuranECommerce_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

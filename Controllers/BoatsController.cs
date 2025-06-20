@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using BoatProject.Constants;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SadikTuranECommerce.DTO;
@@ -48,6 +49,15 @@ namespace SadikTuranECommerce.Controllers
                     Base64Image = img.ImageData != null ? $"data:image/jpeg;base64,{Convert.ToBase64String(img.ImageData)}" : null
                 }).ToList() ?? new List<BoatImageDTO>() // Handle null Images collection
             };
+        }
+
+        private bool IsValidateImage(IFormFile file)
+        {
+            var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+            var contentType = file.ContentType.ToLowerInvariant();
+
+            return ImageValidationConstants.AllowedImageExtensions.Contains(extension) &&
+                   ImageValidationConstants.AllowedImageContentTypes.Contains(contentType);
         }
 
         [HttpGet]
@@ -149,18 +159,30 @@ namespace SadikTuranECommerce.Controllers
                 AvailableTo = request.AvailableTo,
                 OwnerId = request.OwnerId,
                 DistrictId = request.DistrictId,
-
                 Images = new List<BoatImage>()
             };
 
-
-
             if (request.Images != null)
             {
+
+                if (request.Images.Count > 5)
+                {
+                    return BadRequest(new { Message = "You can upload a maximum of 5 images." });
+                }
+
                 foreach (var formFile in request.Images)
                 {
                     if (formFile.Length > 0)
                     {
+
+                        if (!IsValidateImage(formFile))
+                        {
+                            return BadRequest(new
+                            {
+                                Message = $"Invalid file type: {formFile.FileName}. Only JPG, JPEG, PNG, WEBP, HEIC, HEIF files are allowed."
+                            });
+                        }
+
                         using (var memoryStream = new MemoryStream())
                         {
                             await formFile.CopyToAsync(memoryStream);
@@ -230,6 +252,18 @@ namespace SadikTuranECommerce.Controllers
                 }
             }
 
+            // 2. Silinecek görselleri belirle
+            var existingImageCount = boat.Images.Count;
+            var deleteCount = request.ImagesToDelete?.Count ?? 0;
+            var newImageCount = request.NewImages?.Count ?? 0;
+
+            // 🔒 Toplam resim 5'i geçemez (mevcut - silinecek + eklenecek)
+            var remainingImageCount = existingImageCount - deleteCount + newImageCount;
+            if (remainingImageCount > 5)
+            {
+                return BadRequest(new { Message = "En fazla 5 resim yükleyebilirsiniz" });
+            }
+
             // 3. Yeni resimleri ekle (Base64 olarak)
             if (request.NewImages != null && request.NewImages.Any())
             {
@@ -237,6 +271,15 @@ namespace SadikTuranECommerce.Controllers
                 {
                     if (formFile.Length > 0)
                     {
+
+                        if (!IsValidateImage(formFile))
+                        {
+                            return BadRequest(new
+                            {
+                                Message = $"Invalid file type: {formFile.FileName}. Only JPG, JPEG, PNG, WEBP, HEIC, HEIF files are allowed."
+                            });
+                        }
+
                         using (var memoryStream = new MemoryStream())
                         {
                             await formFile.CopyToAsync(memoryStream);
@@ -254,7 +297,7 @@ namespace SadikTuranECommerce.Controllers
 
             await _context.SaveChangesAsync(); // Tüm değişiklikleri kaydet
 
-            // Güncellenmiş tekneyi ve resimlerini döndürmek isteyebiliriz
+            // Güncellenmiş tekneyi ve resimlerini döndür
             var updatedBoat = await _context.Boats
                 .Include(b => b.Owner)
                 .Include(b => b.District)
