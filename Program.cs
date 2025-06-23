@@ -8,7 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // 1. Servisleri EKLE (Build'den ÖNCE)
 builder.Services.AddDbContext<BoatRentalDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("sqlConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("postgresConnection")));
 
 builder.Services.AddCors();
 builder.Services.AddControllers();
