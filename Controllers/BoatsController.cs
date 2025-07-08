@@ -24,7 +24,7 @@ namespace SadikTuranECommerce.Controllers
         {
             if (boat == null)
             {
-                return null; 
+                return null;
             }
 
             return new BoatResponseDTO
@@ -79,7 +79,7 @@ namespace SadikTuranECommerce.Controllers
             // Apply price filter if provided
             if (price.HasValue)
             {
-                query = query.Where(b => b.PricePerHour <= price.Value); 
+                query = query.Where(b => b.PricePerHour <= price.Value);
             }
 
             if (!string.IsNullOrWhiteSpace(city))
@@ -134,7 +134,7 @@ namespace SadikTuranECommerce.Controllers
                 return NotFound();
 
             var dto = MapBoatToResponseDTO(boat);
-          
+
             return Ok(dto);
         }
 
@@ -162,8 +162,14 @@ namespace SadikTuranECommerce.Controllers
                 Images = new List<BoatImage>()
             };
 
+            if (request.Images == null || !request.Images.Any() || request.Images.All(img => img.Length == 0))
+            {
+                return BadRequest(new { Message = "En az bir fotoğraf yüklemeniz zorunludur." });
+            }
+
             if (request.Images != null)
             {
+
 
                 if (request.Images.Count > 5)
                 {
@@ -208,12 +214,12 @@ namespace SadikTuranECommerce.Controllers
                 .Include(b => b.Images)
                 .FirstOrDefaultAsync(b => b.Id == boat.Id);
 
-                var dto = MapBoatToResponseDTO(boat);
+            var dto = MapBoatToResponseDTO(boat);
 
             return CreatedAtAction(nameof(GetBoat), new { id = boat.Id }, dto);
         }
 
-
+        [Authorize]
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateBoat(int id, [FromForm] BoatEditDTO request)
         {
@@ -259,6 +265,12 @@ namespace SadikTuranECommerce.Controllers
 
             // 🔒 Toplam resim 5'i geçemez (mevcut - silinecek + eklenecek)
             var remainingImageCount = existingImageCount - deleteCount + newImageCount;
+
+            if (remainingImageCount < 1)
+            {
+                return BadRequest(new { Message = "Teknede en az bir fotoğraf bulunması zorunludur." });
+            }
+
             if (remainingImageCount > 5)
             {
                 return BadRequest(new { Message = "En fazla 5 resim yükleyebilirsiniz" });

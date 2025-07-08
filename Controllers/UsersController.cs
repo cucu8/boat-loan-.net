@@ -77,7 +77,7 @@ namespace SadikTuranECommerce.Controllers
             if (!string.IsNullOrEmpty(userDto.PhoneNumber))
             {
                 if (await _context.Users.AnyAsync(u => u.PhoneNumber == userDto.PhoneNumber))
-                    return BadRequest(new { Message = "Phone number is already registered." });
+                    return BadRequest(new { Message = "Telefon numarası daha önce kullanıldı" });
             }
 
             PasswordHelper.CreatePasswordHash(userDto.Password, out string passwordHash, out string passwordSalt);
