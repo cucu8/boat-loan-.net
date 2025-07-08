@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("BoatLoan")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+171a1f77f95f531285036b5221ca7345ec08cabe")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+4bb1d65936ac5e79a7cceac2513af63f0c793376")]
 [assembly: System.Reflection.AssemblyProductAttribute("BoatLoan")]
 [assembly: System.Reflection.AssemblyTitleAttribute("BoatLoan")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
